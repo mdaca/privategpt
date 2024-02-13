@@ -27,7 +27,7 @@ We've built a Solution Accelerator to empower your workforce with MDACA PrivateG
 **or** 
    [OpenAI APIs](https://openai.com/blog/openai-api): To run directly against the OpenAI APIs, you'll need to acquire an API key.
 2. Setup an Authentication Provider:
-   The [Setup the identity provider](#add-an-identity-provider) section below shows how to configure authentication providers.
+   The [Setup the identity provider](#-add-an-identity-provider) section below shows how to configure authentication providers.
 3. Setup ChromaDB as a Vectorstore:
    ChromaDB should be running in client/server mode and available at localhost:8000 to utilize knowledge stores.
 4. Setup MySQL as a Database Server:
