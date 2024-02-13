@@ -30,6 +30,8 @@ We've built a Solution Accelerator to empower your workforce with MDACA PrivateG
    The [Setup the identity provider](#add-an-identity-provider) section below shows how to configure authentication providers.
 3. Setup ChromaDB as a Vectorstore:
    ChromaDB should be running in client/server mode and available at localhost:8000 to utilize knowledge stores.
+4. Setup MySQL as a Database Server:
+   MySQL should be running and available to store the chat history.
 
    💡Note: You can configure the authentication provider to your identity solution using [NextAuth providers](https://next-auth.js.org/providers/)
 
@@ -64,12 +66,14 @@ Clone this repository locally or fork to your Github account. Run all of the the
 1. Create a new file named `.env.local` to store the environment variables add the following variables
 
    ```
-   - azure-open-ai-accelerator
-   # azure open ai related configurations
+   # Azure OpenAI related configurations
    AZURE_OPENAI_API_KEY=
    AZURE_OPENAI_API_INSTANCE_NAME=
    AZURE_OPENAI_API_DEPLOYMENT_NAME=
    AZURE_OPENAI_API_VERSION=
+
+   # Using OpenAI APIs instead of Azure
+   OPENAI_API_KEY=
 
    # github OAuth app configuration
    AUTH_GITHUB_ID=
@@ -80,43 +84,27 @@ Clone this repository locally or fork to your Github account. Run all of the the
    AZURE_AD_CLIENT_SECRET=
    AZURE_AD_TENANT_ID=
 
+   # Keycloak OIDC app configuration
+   KEYCLOAK_CLIENT_ID=
+   KEYCLOAK_CLIENT_SECRET=
+   KEYCLOAK_PROVIDER_URL=
+
    # when deploying to production, set the NEXTAUTH_URL environment variable to the canonical URL of your site. https://next-auth.js.org/configuration/options
 
    NEXTAUTH_SECRET=
    NEXTAUTH_URL=http://localhost:3000
+
+   # MYSQL DB configuration
+   MYSQL_HOST=
+   MYSQL_USER=
+   MYSQL_PASSWORD=
+   MY_SQL_DB=
    ```
 
 2. Install npm packages by running `npm install`
 3. Start the project by running `npm run dev`
 
-You should now be prompted to login with GitHub. Once you successfully login, you can start creating new conversations.
-
-# ☁️ Deploy to Azure - GitHub Actions
-
-### 🧬 Fork the repository
-
-Fork this repository to your own organisation so that you can execute GitHub Actions against your own Azure Subscription.
-
-### 🗝️ Configure secrets in your GitHub repository
-
-### 1. AZURE_CREDENTIALS
-
-The GitHub workflow requires a secret named AZURE_CREDENTIALS to authenticate with Azure. The secret contains the credentials for a service principal with the Contributor role on the resource group containing the container app and container registry.
-
-1. Create a service principal with the Contributor role on the resource group that contains the Azure App Service.
-
-   ```
-   az ad sp create-for-rbac
-      --name <NAME OF THE CREDENTIAL> --role contributor --scopes /subscriptions/<SUBSCRIPTION ID>/resourceGroups/<RESOURCE GROUP> --sdk-auth --output json
-   ```
-
-2. Copy the JSON output from the command.
-
-3. In the GitHub repository, navigate to Settings > Secrets > Actions and select New repository secret.
-
-4. Enter AZURE_CREDENTIALS as the name and paste the contents of the JSON output as the value.
-
-5. Select Add secret.
+You should now be prompted to login with your selected identity provider. Once you successfully login, you can start creating new conversations.
 
 # 🪪 Add an identity provider
 
@@ -135,7 +123,7 @@ We'll create two GitHub apps: one for testing locally and another for production
 3. Fill in the following details
 
 ```
-Application name: Azure ChatGPT DEV Environment
+Application name: MDACA PrivateGPT DEV Environment
 Homepage URL:http://localhost:3000/
 Authorization callback URL:http://localhost:3000/api/auth/callback/github/
 ```
@@ -147,12 +135,12 @@ Authorization callback URL:http://localhost:3000/api/auth/callback/github/
 3. Fill in the following details
 
 ```
-Application name: Azure ChatGPT Production
+Application name: MDACA PrivateGPT Production
 Homepage URL:https://YOUR-WEBSITE-NAME.azurewebsites.net/
 Authorization callback URL:https://YOUR-WEBSITE-NAME.azurewebsites.net/api/auth/callback/github/
 ```
 
-⚠️ Once the apps are setup, ensure to update the environment variables locally and on Azure App Service.
+⚠️ Once the apps are setup, ensure to update the environment variables locally.
 
 ```
    # github OAuth app configuration
@@ -169,7 +157,7 @@ Authorization callback URL:https://YOUR-WEBSITE-NAME.azurewebsites.net/api/auth/
 3. Fill in the following details
 
 ```
-Application name: Azure ChatGPT DEV Environment
+Application name: MDACA PrivateGPT DEV Environment
 Supported account types: Accounts in this organizational directory only
 Redirect URI Platform: Web
 Redirect URI:http://localhost:3000/api/auth/callback/azure-ad
@@ -182,7 +170,7 @@ Redirect URI:http://localhost:3000/api/auth/callback/azure-ad
 3. Fill in the following details
 
 ```
-Application name: Azure ChatGPT Production
+Application name: MDACA PrivateGPT Production
 Supported account types: Accounts in this organizational directory only
 Redirect URI Platform: Web
 Redirect URI:https://YOUR-WEBSITE-NAME.azurewebsites.net/api/auth/callback/azure-ad
@@ -215,3 +203,10 @@ Below are the required environment variables
 | AZURE_AD_CLIENT_ID               |                    | The client id specific to the application                                                                                              |
 | AZURE_AD_CLIENT_SECRET           |                    | The client secret specific to the application                                                                                          |
 | AZURE_AD_TENANT_ID               |                    | The organisation Tenant ID                                                                                                             |
+| KEYCLOAK_CLIENT_ID               |                    | The client id specific to the application in Keycloak                                                                                  |
+| KEYCLOAK_CLIENT_SECRET           |                    | The client secret specific to the application in Keycloak                                                                              |
+| KEYCLOAK_PROVIDER_URL            |                    | The URL of the keycloak realm                                                                                                          |
+| MYSQL_HOST                       |                    | The MySQL server's hostname                                                                                                            |
+| MYSQL_USER                       |                    | The MySQL application user account                                                                                                     |
+| MYSQL_PASSWORD                   |                    | The MySQL application user passsword                                                                                                   |
+| MY_SQL_DB                        |                    | The MySQL database name                                                                                                                |
