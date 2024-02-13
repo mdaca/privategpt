@@ -1,0 +1,162 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+ 
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 222.2 84% 4.9%;
+ 
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+ 
+    --popover: 0 0% 100%;
+    --popover-foreground: 222.2 84% 4.9%;
+ 
+    --card: 0 0% 100%;
+    --card-foreground: 222.2 84% 4.9%;
+ 
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+ 
+    --primary: 99 32% 56%;
+    --primary-foreground: 210 40% 98%;
+ 
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+ 
+    --accent: 210 40% 96.1%;
+    --accent-foreground: 222.2 47.4% 11.2%;
+ 
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+ 
+    --ring: 215 20.2% 65.1%;
+ 
+    --radius: 0rem;
+  }
+ 
+  .dark {
+    --background: 222.2 84% 4.9%;
+    --foreground: 210 40% 98%;
+ 
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+ 
+    --popover: 222.2 84% 4.9%;
+    --popover-foreground: 210 40% 98%;
+ 
+    --card: 222.2 84% 4.9%;
+    --card-foreground: 210 40% 98%;
+ 
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+ 
+    --primary: 210 40% 98%;
+    --primary-foreground: 222.2 47.4% 11.2%;
+ 
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 210 40% 98%;
+ 
+    --accent: 217.2 32.6% 17.5%;
+    --accent-foreground: 210 40% 98%;
+ 
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 85.7% 97.3%;
+ 
+    --ring: 217.2 32.6% 17.5%;
+  }
+}
+ 
+@layer base {
+  * {
+    @apply border-border;
+  }
+  body {
+    @apply bg-background text-foreground;
+  }
+    
+}
+
+
+.leftnav {
+  background: hsla(98, 10%, 45%, 0.67);
+}
+
+.menu {
+  background: hsla(97, 12%, 27%, 1);
+  width: 3.2rem;
+}
+
+.menu-item {    
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.k-toolbar.k-grid-toolbar {
+  background-color:  rgba(112, 127, 103, 0.67);
+}
+
+.k-grid .k-table-row.k-alt {
+  background-color: rgba(134, 179, 109, 0.50);
+}
+
+.vector-store-link {
+  font-weight: 500;
+}
+
+.vector-store-link:hover {
+  font-weight: 700;
+}
+
+.search-content-box.k-input  {
+  position: absolute;
+  right: 24px;
+}
+
+.coll-name {
+  color: #D3D3D3;
+    font-size: 24px;
+    font-style: normal;
+    font-weight: 400;
+    line-height: normal;
+}
+
+.modal {    
+  position: fixed;
+  width: 110%;
+  height: 110%;
+  background-color: rgba(0,0,0,.2);
+  z-index: 999;
+  margin-top: -12px;
+  margin-left: -12px;
+}
+
+.k-button-solid-primary[type=button], 
+.k-button-solid-primary[type=submit] {
+  border-color: #0d6efd;
+  color: #fff;
+  background-color: #0d6efd
+}
+
+.k-button-solid-primary.k-hover[type=button], .k-button-solid-primary[type=button]:hover,
+.k-button-solid-primary.k-hover[type=submit], .k-button-solid-primary[type=submit]:hover {
+  border-color: #0257d5;
+  background-color: #025ce2;
+}
+
+.chat-row-top {
+  position: relative;
+    width: 100%;
+}
+
+.chat-row-date {
+  position: absolute;
+  right: 0;
+}
+
+.user-avatar {
+  background-color: #1F3314 !important;
+  color:white !important;
+}
