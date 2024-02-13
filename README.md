@@ -26,7 +26,7 @@ We've built a Solution Accelerator to empower your workforce with MDACA PrivateG
 1. [Azure OpenAI](https://azure.microsoft.com/en-us/products/cognitive-services/openai-service/): To deploy and run ChatGPT on Azure, you'll need an Azure subscription with access to the Azure OpenAI service. Request access [here](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu). Once you have access, follow the instructions in this [link](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal) to deploy the gpt-35-turbo or gpt-4 models.
 **or** 
    [OpenAI APIs](https://openai.com/blog/openai-api): To run directly against the OpenAI APIs, you'll need to acquire an API key.
-2. Setup Keycloak for Authentication:
+2. Setup an Authentication Provider:
    The [Setup the identity provider](#add-an-identity-provider) section below shows how to configure authentication providers.
 3. Setup ChromaDB as a Vectorstore:
    ChromaDB should be running in client/server mode and available at localhost:8000 to utilize knowledge stores.
@@ -184,6 +184,17 @@ Redirect URI:https://YOUR-WEBSITE-NAME.azurewebsites.net/api/auth/callback/azure
 AZURE_AD_CLIENT_ID=
 AZURE_AD_CLIENT_SECRET=
 AZURE_AD_TENANT_ID=
+```
+
+## Keycloak Authentication provider
+
+To setup keycloak as the authentication provider, you will need to create a new client inside your realm.  You will also neeed the realm URL to configure the provider.
+
+```
+# Keycloak OIDC app configuration
+   KEYCLOAK_CLIENT_ID=
+   KEYCLOAK_CLIENT_SECRET=
+   KEYCLOAK_PROVIDER_URL=
 ```
 
 # 🔑 Environment variables
