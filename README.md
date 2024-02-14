@@ -17,17 +17,17 @@ MDACA PrivateGPT is our enterprise option. This is the exact same service but of
 
 **3. Value:** Deliver added business value with your own internal data sources (plug and play) or use plug-ins to integrate with your internal services (e.g., ServiceNow, etc).
 
-**4. Knowledge Stores:** Ask questions over hundreds of pages or you own content and webpages.
+**4. Knowledge Stores:** Ask questions over hundreds of pages or your own content and webpages.
 
 We've built a Solution Accelerator to empower your workforce with MDACA PrivateGPT.
 
 # 📘 Prerequisites
 
-1. [Azure OpenAI](https://azure.microsoft.com/en-us/products/cognitive-services/openai-service/): To deploy and run ChatGPT on Azure, you'll need an Azure subscription with access to the Azure OpenAI service. Request access [here](https://customervoice.microsoft.com/Pages/ResponsePage.aspx?id=v4j5cvGGr0GRqy180BHbR7en2Ais5pxKtso_Pz4b1_xUOFA5Qk1UWDRBMjg0WFhPMkIzTzhKQ1dWNyQlQCN0PWcu). Once you have access, follow the instructions in this [link](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal) to deploy the gpt-35-turbo or gpt-4 models.
+1. [Azure OpenAI](https://azure.microsoft.com/en-us/products/cognitive-services/openai-service/): To deploy and run ChatGPT on Azure, you'll need an Azure subscription with access to the Azure OpenAI service. Once you have access, follow the instructions in this [link](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal) to deploy the gpt-35-turbo or gpt-4 models.
 **or** 
    [OpenAI APIs](https://openai.com/blog/openai-api): To run directly against the OpenAI APIs, you'll need to acquire an API key.
 2. Setup an Authentication Provider:
-   The [Setup the identity provider](#-add-an-identity-provider) section below shows how to configure authentication providers.
+   The [Add an identity provider](#-add-an-identity-provider) section below shows how to configure authentication providers.
 3. Setup ChromaDB as a Vectorstore:
    ChromaDB should be running in client/server mode and available at localhost:8000 to utilize knowledge stores.
 4. Setup MySQL as a Database Server:
@@ -56,8 +56,6 @@ MDACA PrivateGPT is built with the following technologies.
 [Deploy in AWS using the Marketplace AMI](https://aws.amazon.com/marketplace/pp/prodview-oatdhswgh2f4u)
 
 Deploy the AMI and get setup using the quick launch guide: https://mdaca.io/support/documentation/privategpt/launch-guide/
-
-Please see the [section below](#🪪-add-an-identity-provider) for important information about adding authentication to your app.
 
 # 👨🏻‍💻 Run from your local machine
 
@@ -204,13 +202,13 @@ Below are the required environment variables
 | App Setting                      | Value              | Note                                                                                                                                   |
 | -------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
 | AZURE_OPENAI_API_KEY             |                    | API keys of your Azure OpenAI resource                                                                                                 |
-| AZURE_OPENAI_API_INSTANCE_NAME   |                    | the name of your Azure OpenAI resource                                                                                                 |
+| AZURE_OPENAI_API_INSTANCE_NAME   |                    | The name of your Azure OpenAI resource                                                                                                 |
 | AZURE_OPENAI_API_DEPLOYMENT_NAME |                    | The name of your model deployment                                                                                                      |
 | AZURE_OPENAI_API_VERSION         | 2023-03-15-preview | API version when using gpt chat                                                                                                        |
 | AUTH_GITHUB_ID                   |                    | Client ID of your GitHub OAuth application                                                                                             |
 | AUTH_GITHUB_SECRET               |                    | Client Secret of your GitHub OAuth application                                                                                         |
-| NEXTAUTH_SECRET                  |                    | Used to encrypt the NextAuth.js JWT, and to hash email verification tokens. **This set by default as part of the deployment template** |
-| NEXTAUTH_URL                     |                    | Current webs hosting domain name with HTTP or HTTPS. **This set by default as part of the deployment template** qweqweqwe              |
+| NEXTAUTH_SECRET                  |                    | Used to encrypt the NextAuth.js JWT, and to hash email verification tokens.                                                            |
+| NEXTAUTH_URL                     |                    | Current web hosting domain name with HTTP or HTTPS.                                                                                    |
 | AZURE_AD_CLIENT_ID               |                    | The client id specific to the application                                                                                              |
 | AZURE_AD_CLIENT_SECRET           |                    | The client secret specific to the application                                                                                          |
 | AZURE_AD_TENANT_ID               |                    | The organisation Tenant ID                                                                                                             |
