@@ -205,6 +205,7 @@ Below are the required environment variables
 | AZURE_OPENAI_API_INSTANCE_NAME   |                    | The name of your Azure OpenAI resource                                                                                                 |
 | AZURE_OPENAI_API_DEPLOYMENT_NAME |                    | The name of your model deployment                                                                                                      |
 | AZURE_OPENAI_API_VERSION         | 2023-03-15-preview | API version when using gpt chat                                                                                                        |
+| OPENAI_API_KEY                   |                    | The OpenAI API Key to use instead of Azure                                                                                             |
 | AUTH_GITHUB_ID                   |                    | Client ID of your GitHub OAuth application                                                                                             |
 | AUTH_GITHUB_SECRET               |                    | Client Secret of your GitHub OAuth application                                                                                         |
 | NEXTAUTH_SECRET                  |                    | Used to encrypt the NextAuth.js JWT, and to hash email verification tokens.                                                            |
