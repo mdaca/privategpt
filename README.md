@@ -29,7 +29,7 @@ We've built a Solution Accelerator to empower your workforce with MDACA PrivateG
 2. Setup an Authentication Provider:
    The [Add an identity provider](#-add-an-identity-provider) section below shows how to configure authentication providers.
 3. Setup ChromaDB as a Vectorstore:
-   ChromaDB should be running in client/server mode and available at localhost:8000 to utilize knowledge stores.
+   ChromaDB should be running in client/server mode and configured via CHROMA_URL to utilize knowledge stores.
 4. Setup MySQL as a Database Server:
    MySQL should be running and available to store the chat history.
 
@@ -101,6 +101,9 @@ Clone this repository locally or fork to your Github account. Run all of the the
    MYSQL_USER=
    MYSQL_PASSWORD=
    MY_SQL_DB=
+
+   # CHROMA DB configuration
+   CHROMA_URL=http://localhost:8000
    ```
 
 2. Install npm packages by running `npm install`
