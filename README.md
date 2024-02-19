@@ -51,6 +51,10 @@ MDACA PrivateGPT is built with the following technologies.
 
 [shadcn/ui](https://ui.shadcn.com/): re-usable components built using Radix UI and Tailwind CSS.
 
+![](/images/privategpt-new.png)
+
+![](/images/privategpt-stores.png)
+
 # 💙 One click AWS Marketplace Deployment
 
 [Deploy in AWS using the Marketplace AMI](https://aws.amazon.com/marketplace/pp/prodview-oatdhswgh2f4u)
