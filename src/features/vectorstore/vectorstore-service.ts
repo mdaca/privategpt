@@ -12,13 +12,27 @@ import { getToken } from "next-auth/jwt";
 import { accessSync } from "fs";
 
 export const CreateStore = async (model: KnowledgeStoreModel) => {
-    await Chroma.fromTexts(
-  ['init'],
-  [{}],
-  new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'}),
-  {
-    collectionName: model.collectionName ?? ""
-  });
+  class MyEmbeddingFunction {
+    private embedder: OpenAIEmbeddings | null = null;
+  
+    constructor() {
+      this.embedder = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'});
+    }
+  
+    public async generate(texts: string[]): Promise<number[][]> {
+      // do things to turn texts into embeddings with an api_key perhaps
+      let ret = await this.embedder?.embedDocuments(texts);
+      if(ret) {
+        return ret;
+      }
+      throw new ReferenceError("embeddings undefined");
+    }
+  }
+  console.log('CHROMA_URL: ' + process.env.CHROMA_URL);
+  
+  await new ChromaClient({
+    path: process.env.CHROMA_URL
+  }).createCollection({name: model.collectionName ?? "", embeddingFunction: new MyEmbeddingFunction()});
 
   model.userId = await userHashedId();
   model.useName = (await userSession())!.name;
@@ -79,7 +93,7 @@ export const GetAllCollections = async () => {
   try {
     const axios = require('axios');
   
-    return await axios.get('http://localhost:8000/api/v1/collections')
+    return await axios.get(process.env.CHROMA_URL + '/api/v1/collections')
       .then((response: any) => {
         console.log(response.data);
         return response.data;
@@ -119,7 +133,7 @@ export const DeleteStore = async (collectionName: string, request: any) => {
   }
 
   const client = new ChromaClient({
-    path: "http://localhost:8000"
+    path: process.env.CHROMA_URL
   });
   await client.deleteCollection({name: collectionName});
   
@@ -131,7 +145,7 @@ export const DeleteStore = async (collectionName: string, request: any) => {
 export const GetStoreContent = async (collectionName: string, take: number, skip: number, filter: string) => {
 
   const client = new ChromaClient({
-    path: "http://localhost:8000"
+    path: process.env.CHROMA_URL
   });
   const collection = await client.getCollection({
     name: collectionName

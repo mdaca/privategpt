@@ -52,7 +52,7 @@ const Textareaprompt = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
       <Textarea
       rows={8} ref={prompt}
       value={promptValue}
-      defaultValue="Use the following pieces of context to answer the users question.  You work at the same company as the user.  It is called Spin Systems Inc. (SpinSys).  You are working together to generate proposals.  When generating a response, you should write in a profressional tone that will win proposals. "
+      defaultValue="Use the following pieces of context to answer the users question.  "
       onChange={(event:any) => { setPromptValue(event.target.value); }  }
       />
       <button onClick={updatePrompt} style={{marginTop: '18px'}} className="inline-flex items-center justify-center rounded-md text-sm font-medium ring-offset-background transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 p-4" >Update Instructions</button>

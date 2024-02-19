@@ -32,7 +32,7 @@ export async function POST(request: NextRequest) {
   let doc = await pdfjsLib.getDocument(path).promise;
 
   const client = new ChromaClient({
-    path: "http://localhost:8000"
+    path: process.env.CHROMA_URL
   });
 
   const collection = await client.getCollection({

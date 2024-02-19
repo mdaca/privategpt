@@ -65,8 +65,8 @@ export const PromptGPT = async (props: PromptGPTProps) => {
   `;
   
   
-  let custom = 'Use the following pieces of context to answer the users question.  You work at the same company as the user.  It is called Spin Systems Inc. (SpinSys).  You are working together to generate proposals.  When generating a response, you should write in a profressional tone that will win proposals.';
-
+  let custom = 'Use the following pieces of context to answer the users question.  ';
+  
   const storePrompt = myStores.find((item) => { return item.collectionName == collectionName; })?.collectionPrompt;
 
   if(storePrompt != null && storePrompt.length > 0) {
