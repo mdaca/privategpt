@@ -91,7 +91,8 @@ async function crawlPage (browser:any, url:any, collectionName:any, collection: 
         metadatas,
         new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'}),
         {
-          collectionName: collectionName ?? ""
+          collectionName: collectionName ?? "",
+          url: process.env.CHROMA_URL
         });
 
         

@@ -62,7 +62,8 @@ export async function POST(request: NextRequest) {
     [{ page: i, file: file.name, uploaded: uploaded }],
     new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'}),
     {
-      collectionName: cn
+      collectionName: cn,
+      url: process.env.CHROMA_URL
     }
   );
   }

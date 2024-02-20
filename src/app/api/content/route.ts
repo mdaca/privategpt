@@ -41,7 +41,8 @@ export async function POST(request: NextRequest) {
         metadatas,
         new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'}),
         {
-          collectionName: body.name ?? ""
+          collectionName: body.name ?? "",
+          url: process.env.CHROMA_URL
         });
 
     return NextResponse.json({ success: true });
