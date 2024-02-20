@@ -66,7 +66,7 @@ export const PromptGPT = async (props: PromptGPTProps) => {
   
   
   let custom = 'Use the following pieces of context to answer the users question.  ';
-  
+
   const storePrompt = myStores.find((item) => { return item.collectionName == collectionName; })?.collectionPrompt;
 
   if(storePrompt != null && storePrompt.length > 0) {
@@ -86,7 +86,8 @@ export const PromptGPT = async (props: PromptGPTProps) => {
 
     const vectorStore = await Chroma.fromExistingCollection(
       new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002' }  ),
-      { collectionName: collectionName }
+      { collectionName: collectionName,
+        url: process.env.CHROMA_URL  }
     );
   
     const streamingModel = new ChatOpenAI({
