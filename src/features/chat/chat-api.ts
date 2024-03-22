@@ -7,6 +7,7 @@ import {
   ChatPromptTemplate,
   HumanMessagePromptTemplate,
   MessagesPlaceholder,
+  PromptTemplate,
   SystemMessagePromptTemplate,
 } from "langchain/prompts";
 import { userHashedId } from "../auth/helpers";
@@ -56,7 +57,7 @@ export const PromptGPT = async (props: PromptGPTProps) => {
 
      
 
-  const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT_START = `Given the following conversation and a follow up question, return the conversation history excerpt that includes any relevant context to the question if it exists and rephrase the follow up question to be a standalone question.
+  const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT = `Given the following conversation and a follow up question, return the conversation history excerpt that includes any relevant context to the question if it exists and rephrase the follow up question to be a standalone question.
   Chat History:
   {chat_history}
   Follow Up Input: {question}
@@ -73,16 +74,17 @@ export const PromptGPT = async (props: PromptGPTProps) => {
     custom = storePrompt;
   }
   
-  const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT_END = 
+  const CHAIN_PROMPT_END = 
   `If you don't know the answer, just say that you don't know, don't try to make up an answer.
   ----------------
-  <Relevant chat history excerpt as context here>
-  Standalone question: <Rephrased question here>
+  {context}
+  Chat History: {chat_history}
+  Standalone question: {question}
   \`\`\`
   Your answer:`;
 
-  const CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT = 
-  `${CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT_START}${custom}${CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT_END}`;
+  const CHAIN_PROMPT = 
+  `${custom}${CHAIN_PROMPT_END}`;
 
     const vectorStore = await Chroma.fromExistingCollection(
       new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002' }  ),
@@ -105,6 +107,10 @@ export const PromptGPT = async (props: PromptGPTProps) => {
         questionGeneratorChainOptions: {
           template: CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT,
           llm: nonStreamingModel
+        },
+        qaChainOptions: {
+          type: 'stuff',
+          prompt: new PromptTemplate({ template: CHAIN_PROMPT, inputVariables: ["context", "question", "chat_history"]})
         },
         verbose: true
       }
