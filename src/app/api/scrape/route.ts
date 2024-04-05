@@ -1,4 +1,6 @@
+import { BedrockEmbeddings } from '@langchain/community/embeddings/bedrock';
 import { ChromaClient } from 'chromadb';
+import { Embeddings } from 'langchain/embeddings/base';
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
 import { Chroma } from 'langchain/vectorstores/chroma';
 import { NextRequest, NextResponse } from 'next/server'
@@ -86,10 +88,25 @@ async function crawlPage (browser:any, url:any, collectionName:any, collection: 
     where: {"url": {"$eq": url}}
     });
 
+    let embeddings: any = null;
+
+    if(process.env.BEDROCK_AWS_REGION) {
+        embeddings = new BedrockEmbeddings({
+          region: process.env.BEDROCK_AWS_REGION,
+          credentials: {
+            accessKeyId: process.env.BEDROCK_AWS_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.BEDROCK_AWS_SECRET_ACCESS_KEY!,
+          },
+          model: process.env.BEDROCK_EMBED_MODEL, // Default value
+        });
+      } else {
+        embeddings = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'});
+      }
+
     await Chroma.fromTexts(
         chunks,
         metadatas,
-        new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'}),
+        embeddings,
         {
           collectionName: collectionName ?? "",
           url: process.env.CHROMA_URL

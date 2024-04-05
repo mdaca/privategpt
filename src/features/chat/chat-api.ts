@@ -18,7 +18,8 @@ import { Chroma } from "langchain/vectorstores/chroma";
 import { CallbackManager } from "langchain/callbacks";
 import { inertPromptAndResponse } from "./chat-service";
 import { GetMyStores } from "../vectorstore/vectorstore-service";
-import { Mystery_Quest } from "next/font/google";
+import { BedrockChat } from "@langchain/community/chat_models/bedrock";
+import { BedrockEmbeddings } from "@langchain/community/embeddings/bedrock";
 
 export const PromptGPT = async (props: PromptGPTProps) => {
   const { lastHumanMessage, id } = await initAndGuardChatSession(props);
@@ -26,7 +27,7 @@ export const PromptGPT = async (props: PromptGPTProps) => {
   const { stream, handlers } = LangChainStream({
     onCompletion: async (completion: string) => {
       console.log(completion);
-      //await inertPromptAndResponse(id, lastHumanMessage.content, completion);
+      await inertPromptAndResponse(id, lastHumanMessage.content, completion);
     },
   });
 
@@ -34,8 +35,42 @@ export const PromptGPT = async (props: PromptGPTProps) => {
 
   const collectionName = props.collectionName;
 
-
   if(collectionName && collectionName.length > 0) {
+
+    let embeddings: any = null;
+    let model: any = null;
+
+    if(process.env.BEDROCK_AWS_REGION) {
+      model = new BedrockChat({
+        model: process.env.BEDROCK_MODEL!, //"anthropic.claude-3-sonnet-20240229-v1:0",
+        region: process.env.BEDROCK_AWS_REGION, //"us-east-1",
+        // endpointUrl: "custom.amazonaws.com",
+        credentials: {
+          accessKeyId: process.env.BEDROCK_AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.BEDROCK_AWS_SECRET_ACCESS_KEY!,
+        },
+        modelKwargs: {
+        //   anthropic_version: "bedrock-2023-05-31",
+          "temperature": 0.5,
+          "max_tokens": 4096
+        },
+      });
+
+      embeddings = new BedrockEmbeddings({
+        region: process.env.BEDROCK_AWS_REGION,
+        credentials: {
+          accessKeyId: process.env.BEDROCK_AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.BEDROCK_AWS_SECRET_ACCESS_KEY!,
+        },
+        model: process.env.BEDROCK_EMBED_MODEL, // Default value
+      });
+
+    } else {
+      model = new ChatOpenAI({
+        temperature: .5,});
+
+        embeddings = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002' }  );
+    }
 
     const myStores = await GetMyStores();
 
@@ -86,27 +121,22 @@ export const PromptGPT = async (props: PromptGPTProps) => {
   const CHAIN_PROMPT = 
   `${custom}${CHAIN_PROMPT_END}`;
 
+
     const vectorStore = await Chroma.fromExistingCollection(
-      new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002' }  ),
+      embeddings,
       { collectionName: collectionName,
         url: process.env.CHROMA_URL  }
     );
   
-    const streamingModel = new ChatOpenAI({
-      streaming: true,
-      temperature: 0,
-    });
-    const nonStreamingModel = new ChatOpenAI({
-      temperature: .5,});
     const chain = ConversationalRetrievalQAChain.fromLLM(
-      nonStreamingModel,
+      model,
       vectorStore.asRetriever(8),
       {
         returnSourceDocuments: true,
         memory: memory,
         questionGeneratorChainOptions: {
           template: CUSTOM_QUESTION_GENERATOR_CHAIN_PROMPT,
-          llm: nonStreamingModel
+          llm: model
         },
         qaChainOptions: {
           type: 'stuff',
@@ -124,7 +154,13 @@ export const PromptGPT = async (props: PromptGPTProps) => {
       })
       .catch(e => { console.log(e);});
 
-      let ret = res.text;
+      let ret = '';
+
+      if(res.response) {
+        ret = res.response;
+      } else {
+        ret = res.text;
+      }
 
       ret += ' \r\n \r\n `Sources`';
 
@@ -141,20 +177,42 @@ export const PromptGPT = async (props: PromptGPTProps) => {
       return new StreamingTextResponse(s);
   } else {
 
-    const chat = new ChatOpenAI({
-      temperature: 0,
-      streaming: true,
+    let model: any = null;
+
+    if(process.env.BEDROCK_AWS_REGION) {
+      model = new BedrockChat({
+        streaming: true,
+        model: process.env.BEDROCK_MODEL!, //"anthropic.claude-3-sonnet-20240229-v1:0",
+        region: process.env.BEDROCK_AWS_REGION, //"us-east-1",
+        // endpointUrl: "custom.amazonaws.com",
+        credentials: {
+          accessKeyId: process.env.BEDROCK_AWS_ACCESS_KEY_ID!,
+          secretAccessKey: process.env.BEDROCK_AWS_SECRET_ACCESS_KEY!,
+        },
+        modelKwargs: {
+        //   anthropic_version: "bedrock-2023-05-31",
+          "temperature": 0.5,
+          "max_tokens": 4096
+        },
+      });
+
+    } else {
+      model = new ChatOpenAI({
+        verbose: true,
+        streaming: true, 
+        temperature: .5,});
+
+    }
+
+    const memory = new BufferWindowMemory({
+      k: 12,
+      returnMessages: true,
+      memoryKey: "history",
+      chatHistory: new MySQLChatMessageHistory({
+        sessionId: id,
+        userId: userId,
+      }),
     });
-    
-  const memory = new BufferWindowMemory({
-    k: 12,
-     returnMessages: true,
-     memoryKey: "history",
-     chatHistory: new MySQLChatMessageHistory({
-       sessionId: id,
-       userId: userId,
-     }),
-   });
   
     const chatPrompt = ChatPromptTemplate.fromPromptMessages([
       SystemMessagePromptTemplate.fromTemplate(
@@ -165,13 +223,18 @@ export const PromptGPT = async (props: PromptGPTProps) => {
       new MessagesPlaceholder("history"),
       HumanMessagePromptTemplate.fromTemplate("{input}"),
     ]);
+
     const chain = new ConversationChain({
-      llm: chat,
+      llm: model,
       memory,
       prompt: chatPrompt,
     });
+
+    const callbacks = CallbackManager.fromHandlers(handlers);
+
     chain.call({input: lastHumanMessage.content }, [handlers]).catch(e => { console.log(e);});
     return new StreamingTextResponse(stream);
+  
   }
 
 };

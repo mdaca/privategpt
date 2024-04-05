@@ -1,3 +1,4 @@
+import { BedrockEmbeddings } from '@langchain/community/embeddings/bedrock';
 import { ChromaClient } from 'chromadb';
 import { writeFile } from 'fs/promises'
 import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
@@ -54,13 +55,29 @@ export async function POST(request: NextRequest) {
     });
     console.dir(strings);
     let pageContent = strings.join(' ');
+
+    
+    let embeddings: any = null;
+
+    if(process.env.BEDROCK_AWS_REGION) {
+        embeddings = new BedrockEmbeddings({
+          region: process.env.BEDROCK_AWS_REGION,
+          credentials: {
+            accessKeyId: process.env.BEDROCK_AWS_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.BEDROCK_AWS_SECRET_ACCESS_KEY!,
+          },
+          model: process.env.BEDROCK_EMBED_MODEL, // Default value
+        });
+      } else {
+        embeddings = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'});
+      }
     
      await Chroma.fromTexts(
     [
       pageContent
     ],
     [{ page: i, file: file.name, uploaded: uploaded }],
-    new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'}),
+    embeddings,
     {
       collectionName: cn,
       url: process.env.CHROMA_URL

@@ -1,21 +1,21 @@
 # MDACA PrivateGPT - Solution Accelerator
-## Unleash the Power of Azure Open AI or Open AI APIs with your Private Content
+## Unleash the Power of AWS Bedrock, Azure Open AI or the Open AI APIs with your Private Content
 
 ChatGPT has grown explosively in popularity as we all know now. Business users across the globe often tap into the public service to work more productively or act as a creative assistant.
 
 However, ChatGPT risks exposing confidential intellectual property. One option is to block corporate access to ChatGPT, but people always find workarounds. This also limits the powerful capabilities of ChatGPT and reduces employee productivity and their work experience.
 
-MDACA PrivateGPT is our enterprise option. This is the exact same service but offered as your private ChatGPT.
+MDACA PrivateGPT is our enterprise option.
 
 ![](/images/highlevel.png)
 
 ### Benefits are:
 
-**1. Private:** Built-in guarantees around the privacy of your data and fully isolated from those operated by OpenAI.
+**1. Private:** Built-in guarantees around the privacy of your data and fully isolated.
 
 **2. Controlled:** Network traffic can be fully isolated to your network and other enterprise grade security controls are built in.
 
-**3. Value:** Deliver added business value with your own internal data sources (plug and play) or use plug-ins to integrate with your internal services (e.g., ServiceNow, etc).
+**3. Value:** Deliver added business value with your own internal data sources (plug and play) or develop plug-ins to integrate with your internal services (e.g., ServiceNow, etc).
 
 **4. Knowledge Stores:** Ask questions over hundreds of pages or your own content and webpages.
 
@@ -23,8 +23,10 @@ We've built a Solution Accelerator to empower your workforce with MDACA PrivateG
 
 # 📘 Prerequisites
 
-1. [Azure OpenAI](https://azure.microsoft.com/en-us/products/cognitive-services/openai-service/): To deploy and run ChatGPT on Azure, you'll need an Azure subscription with access to the Azure OpenAI service. Once you have access, follow the instructions in this [link](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal) to deploy the gpt-35-turbo or gpt-4 models.
-**or** 
+1. [AWS Bedrock](https://aws.amazon.com/bedrock/): To utilize Bedrock, you must first request model access.  Follow these [instructions](https://docs.aws.amazon.com/bedrock/latest/userguide/model-access.html) to request model access.
+   **or** 
+   [Azure OpenAI](https://azure.microsoft.com/en-us/products/cognitive-services/openai-service/): To deploy and run ChatGPT on Azure, you'll need an Azure subscription with access to the Azure OpenAI service. Once you have access, follow the instructions in this [link](https://learn.microsoft.com/en-us/azure/cognitive-services/openai/how-to/create-resource?pivots=web-portal) to deploy the gpt-35-turbo or gpt-4 models.
+   **or** 
    [OpenAI APIs](https://openai.com/blog/openai-api): To run directly against the OpenAI APIs, you'll need to acquire an API key.
 2. Setup an Authentication Provider:
    The [Add an identity provider](#-add-an-identity-provider) section below shows how to configure authentication providers.
@@ -68,14 +70,29 @@ Clone this repository locally or fork to your Github account. Run all of the the
 1. Create a new file named `.env.local` to store the environment variables add the following variables
 
    ```
+   # SELECT ONLY ONE - AWS, Azure, or OpenAI
+
+   BEDROCK_AWS_REGION=us-east-1
+   BEDROCK_AWS_ACCESS_KEY_ID=...
+   BEDROCK_AWS_SECRET_ACCESS_KEY=...
+   BEDROCK_MODEL=mistral.mixtral-8x7b-instruct-v0:1
+   BEDROCK_EMBED_MODEL=amazon.titan-embed-text-v1
+
+   # - OR -
+
    # Azure OpenAI related configurations
    AZURE_OPENAI_API_KEY=
    AZURE_OPENAI_API_INSTANCE_NAME=
    AZURE_OPENAI_API_DEPLOYMENT_NAME=
    AZURE_OPENAI_API_VERSION=
 
-   # Using OpenAI APIs instead of Azure
+   # - OR -
+
+   # Using OpenAI APIs instead of Azure or AWS
    OPENAI_API_KEY=
+
+
+   # Select Only ONE - GitHub, Azure AD, or Keycloak 
 
    # github OAuth app configuration
    AUTH_GITHUB_ID=
@@ -208,6 +225,11 @@ Below are the required environment variables
 
 | App Setting                      | Value              | Note                                                                                                                                   |
 | -------------------------------- | ------------------ | -------------------------------------------------------------------------------------------------------------------------------------- |
+| BEDROCK_AWS_REGION               |                    | AWS Region containing Bedrock                                                                                                          |
+| BEDROCK_AWS_ACCESS_KEY_ID        |                    | AWS Acess Key ID                                                                                                                       |
+| BEDROCK_AWS_SECRET_ACCESS_KEY    |                    | AWS Secret Access Key                                                                                                                  |
+| BEDROCK_MODEL                    |                    | Model ID (i.e. mistral.mixtral-8x7b-instruct-v0:1)                                                                                     |
+| BEDROCK_EMBED_MODEL              |                    | Embed Model ID (i.e. amazon.titan-embed-text-v1)                                                                                       |
 | AZURE_OPENAI_API_KEY             |                    | API keys of your Azure OpenAI resource                                                                                                 |
 | AZURE_OPENAI_API_INSTANCE_NAME   |                    | The name of your Azure OpenAI resource                                                                                                 |
 | AZURE_OPENAI_API_DEPLOYMENT_NAME |                    | The name of your model deployment                                                                                                      |
@@ -227,3 +249,4 @@ Below are the required environment variables
 | MYSQL_USER                       |                    | The MySQL application user account                                                                                                     |
 | MYSQL_PASSWORD                   |                    | The MySQL application user passsword                                                                                                   |
 | MY_SQL_DB                        |                    | The MySQL database name                                                                                                                |
+| CHROMA_URL                       |                    | URL of the ChromaDB server                                                                                                             |

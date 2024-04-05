@@ -12,6 +12,11 @@ export function mapStoredMessagesToChatMessages(
   messages: StoredMessage[]
 ): BaseMessage[] {
   return messages.map((message) => {
+
+    if(typeof message.data.name != 'undefined') {
+      delete message.data.name;
+    }
+
     switch (message.data.role) {
       case "human":
         return new HumanMessage(message.data);

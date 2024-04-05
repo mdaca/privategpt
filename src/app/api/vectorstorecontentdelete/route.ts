@@ -1,6 +1,4 @@
 import { ChromaClient } from 'chromadb';
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { Chroma } from 'langchain/vectorstores/chroma';
 import { NextRequest, NextResponse } from 'next/server'
 
 export async function POST(request: NextRequest) {

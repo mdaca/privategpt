@@ -10,13 +10,30 @@ import { nanoid } from "nanoid";
 import moment from 'moment';
 import { getToken } from "next-auth/jwt";
 import { accessSync } from "fs";
+import { BedrockEmbeddings } from "@langchain/community/embeddings/bedrock";
 
 export const CreateStore = async (model: KnowledgeStoreModel) => {
   class MyEmbeddingFunction {
-    private embedder: OpenAIEmbeddings | null = null;
+    private embedder: any = null;
   
     constructor() {
-      this.embedder = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'});
+      
+    let embeddings: any = null;
+
+    if(process.env.BEDROCK_AWS_REGION) {
+        embeddings = new BedrockEmbeddings({
+          region: process.env.BEDROCK_AWS_REGION,
+          credentials: {
+            accessKeyId: process.env.BEDROCK_AWS_ACCESS_KEY_ID!,
+            secretAccessKey: process.env.BEDROCK_AWS_SECRET_ACCESS_KEY!,
+          },
+          model: process.env.BEDROCK_EMBED_MODEL, // Default value
+        });
+      } else {
+        embeddings = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'});
+      }
+
+      this.embedder = embeddings;
     }
   
     public async generate(texts: string[]): Promise<number[][]> {
