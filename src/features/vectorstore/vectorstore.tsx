@@ -127,6 +127,7 @@ export const Vectorstore = async (props: VectorstoreProp) => {
   const [editItem, setEditItem] = React.useState({
     id: '',
     isPrivate: 1,
+    storeType: 'Large',
     createdAt: new Date().toISOString(),
     userId: '',
     useName: '',
@@ -155,7 +156,7 @@ export const Vectorstore = async (props: VectorstoreProp) => {
       // POST the data to the URL of the form
       fetch(formURL, {
         method: "POST",
-        body: JSON.stringify({ name: event.collectionName, desc: event.collectionDesc, private: event.isPrivate.value ? event.isPrivate.value : event.isPrivate }),
+        body: JSON.stringify({ name: event.collectionName, desc: event.collectionDesc, private: event.isPrivate.value ? event.isPrivate.value : event.isPrivate, storeType: event.storeType.value ? event.storeType.value : event.storeType }),
         headers: {
           'accept': 'application/json',
         },
@@ -182,6 +183,7 @@ export const Vectorstore = async (props: VectorstoreProp) => {
     setEditItem({
       id: newID.toString(),
       isPrivate: 1,
+      storeType: 'Large',
       createdAt: new Date().toISOString(),
       userId: '',
       useName: '',
@@ -225,12 +227,16 @@ export const Vectorstore = async (props: VectorstoreProp) => {
         </GridToolbar>
         <Column field="collectionName" title="Store Name" width="250px" cell={props => (
   <td>
-    <a className="vector-store-link" href={`/vectorstore/${props.dataItem.collectionName}`} >{props.dataItem.collectionName}</a>
+    <a className="vector-store-link" href={`/vectorstore/${props.dataItem.collectionName}/?graph=${props.dataItem.storeType == 'Graph'}`} >{props.dataItem.collectionName}</a>
   </td>)}  />
         <Column field="collectionDesc" title="Store Description" />
         <Column field="isPrivate" title="Private ?" width="200px" cell={props => (
   <td>
     <span>{`${props.dataItem.isPrivate == 1 || props.dataItem.isPrivate == true ? 'Yes' : 'No'}`}</span>
+  </td>)} />
+  <Column field="storeType" title="Store Type" width="200px" cell={props => (
+  <td>
+    <span>{`${props.dataItem.storeType ? props.dataItem.storeType : 'Large'}`}</span>
   </td>)} />
         <Column cell={MyEditCommandCell} />
       </Grid>

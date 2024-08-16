@@ -10,7 +10,7 @@ export async function POST(request: NextRequest) {
     const take = body.take;
     const filter = body.filter;
 
-    let stores = await GetStoreContent(collectionName, take, skip, filter);
+    let stores = await GetStoreContent(collectionName, take, skip, filter, request);
     return NextResponse.json(stores);
   } catch (err) {
     console.log("Error");

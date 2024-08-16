@@ -11,7 +11,7 @@ interface ChatRowProps {
   name: string;
   profilePicture: string;
   message: string;
-  type: chatRole;
+  type: any;
   date: any;
 }
 

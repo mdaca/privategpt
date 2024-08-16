@@ -1,5 +1,5 @@
 import { Message } from "ai";
-import { AIMessage, HumanMessage } from "langchain/schema";
+import { AIMessage, HumanMessage } from "@langchain/core/messages";
 import { ChatMessageModel } from "./chat-service";
 
 export const mostRecentMemory = (

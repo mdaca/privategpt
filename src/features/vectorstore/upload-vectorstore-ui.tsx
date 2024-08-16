@@ -12,11 +12,34 @@ export type VectorProp = {
   storeId: string;
 };
 
+
+function getParameterByName(name, url = window.location.href): string {
+  name = name.replace(/[\[\]]/g, '\\$&');
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      results = regex.exec(url);
+  if (!results) return '';
+  if (!results[2]) return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
+
 export const VectorstoreUpload: FC<VectorProp> = async (props: any) => {
+
+  if(typeof props == 'undefined') {
+    return;
+  }
+
+  let graph = false;
+  
+  graph = getParameterByName('graph') == 'true';
 
   let collectionName = props.storeId;
   const saveUrl = '/api/upload?cn=' + collectionName;
   const removeUrl = '/api/upload/remove';
+
+  const onBeforeUpload = (e: any) => {
+    e.additionalData['nodes'] = tbNodes.current.value;
+    e.additionalData['relats'] = tbRelats.current.value;
+  };
 
   const submitFormTA = (e: any) => {
     // We don't want the page to refresh
@@ -26,7 +49,7 @@ export const VectorstoreUpload: FC<VectorProp> = async (props: any) => {
     // POST the data to the URL of the form
     fetch(formURL, {
       method: "POST",
-      body: JSON.stringify({ name: collectionName, content: valueTA.current.value, title: titleTA.current.value }),
+      body: JSON.stringify({ name: collectionName, content: valueTA.current.value, title: titleTA.current.value, nodes: tbNodes.current.value, relats: tbRelats.current.value }),
       headers: {
         'accept': 'application/json',
       },
@@ -49,7 +72,7 @@ export const VectorstoreUpload: FC<VectorProp> = async (props: any) => {
     // POST the data to the URL of the form
     fetch(formURL, {
       method: "POST",
-      body: JSON.stringify({ name: collectionName, url: value.current.value }),
+      body: JSON.stringify({ name: collectionName, url: value.current.value, nodes: tbNodes.current.value, relats: tbRelats.current.value }),
       headers: {
         'accept': 'application/json',
       },
@@ -68,6 +91,8 @@ export const VectorstoreUpload: FC<VectorProp> = async (props: any) => {
   const value: any = useRef();
   const valueTA: any = useRef();
   const titleTA: any = useRef();
+  const tbNodes: any = useRef();
+  const tbRelats: any = useRef();
 
   return (
     <Card className="h-full flex pt-8 overflow-y-auto">
@@ -80,7 +105,8 @@ export const VectorstoreUpload: FC<VectorProp> = async (props: any) => {
         <div className="items-center space-x-2 p-2">
         <Link style={{float: 'right'}}
                     href={{
-                      pathname: `/vectorstore/${collectionName}`
+                      pathname: `/vectorstore/${collectionName}`,
+                      query: `graph=${graph}`
                     }}
                   >
                     &lt; Back to Knowledge Store
@@ -88,7 +114,24 @@ export const VectorstoreUpload: FC<VectorProp> = async (props: any) => {
                   </div>
         <div className="items-left space-x-2">
           <Card className="flex-1 mt-8 ml-2"> 
-          
+          {graph ? (
+          <fieldset>
+                  <div>Allowed Graph Node Types (comma separated)</div>
+          <TextBox
+                    name="name"
+                    ref={tbNodes}
+                    placeholder="PERSON,ORGANIZATION,SKILL"
+                  />
+                  <div>Allowed Graph Relationship Types (comma separated)</div>
+          <TextBox
+                    name="name"
+                    ref={tbRelats}
+                    placeholder="HAS,STUDIED_AT,WORKED_AT"
+                  />
+                  <div className="flex-1 mt-2" ></div>
+                  </fieldset>
+                  
+                ): (<div></div>) }
           <fieldset >
                   <h3  className="text-xl font-bold tracking-tight">Upload PDFs</h3>
         <Upload
@@ -97,6 +140,7 @@ export const VectorstoreUpload: FC<VectorProp> = async (props: any) => {
           defaultFiles={[]}
           withCredentials={false}
           saveUrl={saveUrl}
+          onBeforeUpload={onBeforeUpload}
           removeUrl={removeUrl}
         />
         </fieldset>

@@ -83,21 +83,6 @@ export const ChatUI: FC<Prop> = (props) => {
   return (
     <Card className="h-full relative">
       <div className="h-full rounded-md overflow-y-auto" ref={scrollRef}>
-        <div className="flex justify-center p-4">
-          <Tabs
-            defaultValue={props.model ?? "GPT-3.5"}
-            onValueChange={onValueChange}
-          >
-            <TabsList className="grid w-full grid-cols-2 h-12 items-stretch">
-              <TabsTrigger disabled={messages.length !== 0} value="GPT-3.5">
-                ⚡ GPT-3.5
-              </TabsTrigger>
-              <TabsTrigger disabled={messages.length !== 0} value="GPT-4">
-                ✨ GPT-4
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-        </div>
         <div className=" pb-[80px] ">
           {messages.map((message, index) => (
             <ChatRow

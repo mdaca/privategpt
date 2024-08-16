@@ -12,6 +12,7 @@ export async function POST(request: NextRequest) {
       collectionName: body.name, collectionPrompt: body.prompt,
       id: '',
       isPrivate: false,
+      storeType: '',
       createdAt: '',
       userId: '',
       useName: '',

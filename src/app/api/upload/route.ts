@@ -1,20 +1,34 @@
-import { BedrockEmbeddings } from '@langchain/community/embeddings/bedrock';
-import { ChromaClient } from 'chromadb';
+import { GetMyStores, KnowledgeStoreModel, addToGraphStore, get_neo4jgraph, uploadToChroma, uploadToSmallDocsStore } from '@/features/vectorstore/vectorstore-service';
 import { writeFile } from 'fs/promises'
-import { OpenAIEmbeddings } from 'langchain/embeddings/openai';
-import { Chroma } from 'langchain/vectorstores/chroma';
 import { NextRequest, NextResponse } from 'next/server'
 import * as PDFJS from "pdfjs-dist/build/pdf";
 import * as PDFJSWorker from "pdfjs-dist/build/pdf.worker";
+import { Document } from "@langchain/core/documents";
 import { v4 as uuidv4 } from 'uuid';
+import { userHashedId, userSession } from '@/features/auth/helpers';
+import { getToken } from 'next-auth/jwt';
+var fs = require('fs');
+
+function getParameterByName(name, url = window.location.href): string {
+  name = name.replace(/[\[\]]/g, '\\$&');
+  var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)'),
+      results = regex.exec(url);
+  if (!results) return '';
+  if (!results[2]) return '';
+  return decodeURIComponent(results[2].replace(/\+/g, ' '));
+}
 
 export async function POST(request: NextRequest) {
+
   PDFJS.GlobalWorkerOptions.workerSrc = PDFJSWorker;
   const url = request.url;
-  const cn = url.split("cn=")[1];
+  const cn = getParameterByName("cn", url);
   const data = await request.formData()
-  const file: File | null = data.get('files') as unknown as File
-
+  const file: File | null = data.get('files') as unknown as File;
+  const nodes: string | null = data.get('nodes') as unknown as string;
+  const relats: string | null = data.get('relats') as unknown as string;
+  const session = await userSession();
+  
   if (!file) {
     return NextResponse.json({ success: false })
   }
@@ -24,68 +38,152 @@ export async function POST(request: NextRequest) {
   
   // With the file data in the buffer, you can do whatever you want with it.
   // For this, we'll just write it to the filesystem in a new location
-  const path = `/tmp/${file.name}`
+  const path = `/tmp/${uuidv4()}.tmp`
   await writeFile(path, buffer)
   console.log(`open ${path} to see the uploaded file`)
+
+  let stores = await GetMyStores();
+
+  let store: any = null;
+
+  stores.forEach(element => {
+    if(element.collectionName == cn) {
+      store = element;
+    }
+  });
+
+  const token = await getToken({ req: request });
+
+  let access: boolean = true;
+
+  if(token != null && token['isAdmin'] == true) {
+    access = true;
+  }
+
+  if(store.isPrivate == false || store.userId == token?.email) {
+    access = true;
+  }
+
+  if(!access) {
+    return NextResponse.json({ success: false });
+  }
 
   const pdfjsLib = require("pdfjs-dist");
 
   let doc = await pdfjsLib.getDocument(path).promise;
 
-  const client = new ChromaClient({
-    path: process.env.CHROMA_URL
-  });
+  if(store) {
 
-  const collection = await client.getCollection({
-    name: cn
-  });
+    if(store.storeType == 'Graph') {
+      let uploaded = new Date().toISOString();
 
-  await collection.delete({
-    where: {"file": {"$eq": file.name}}
-    });
+      let pages: string[] = [];
 
-    let uploaded = new Date().toISOString();
+      for (let i = 1; i <= doc.numPages; i++) {
 
-  for(let i = 1; i <= doc.numPages; i++) {
+        let page = await doc.getPage(i);
+        let content = await page.getTextContent();
+        let strings = content.items.map(function (item: any) {
+          return item.str;
+        });
+        //console.dir(strings);
+        let pageContent = strings.join(' \r\n');
+        pages.push(pageContent);
+      }
 
-    let page = await doc.getPage(i);
-    let content = await page.getTextContent();
-    let strings = content.items.map(function(item: any) {
-        return item.str;
-    });
-    console.dir(strings);
-    let pageContent = strings.join(' ');
+      // let graph = await get_neo4jgraph(cn);
+
+      // await graph.query(
+      //   `MATCH (p:Parent {file: $file})
+      //        DETACH DELETE p
+      //       `, {
+      //   "file": file.name
+      // }
+      // );
+      // await graph.query(
+      //   `MATCH (p:Child {file: $file})
+      //        DELETE p
+      //       `, {
+      //   "file": file.name
+      // }
+      // );
+
+      let lcDoc = new Document({ pageContent: pages.join('  \r\n'), metadata: { file: file.name, uploaded: uploaded } });
+
+      await addToGraphStore(lcDoc, cn, nodes, relats);
+
+      fs.rmSync(path, {
+        force: true,
+      });
+      return NextResponse.json({ success: true });
+
+    } else if(store.storeType == 'SmallDocs') {
+      let uploaded = new Date().toISOString();
+
+      let pages: string[] = [];
+
+      for (let i = 1; i <= doc.numPages; i++) {
+
+        let page = await doc.getPage(i);
+        let content = await page.getTextContent();
+        let strings = content.items.map(function (item: any) {
+          return item.str;
+        });
+        //console.dir(strings);
+        let pageContent = strings.join(' \r\n');
+        pages.push(pageContent);
+      }
+
+      let graph = await get_neo4jgraph(cn);
+
+      await graph.query(
+        `MATCH (p:Parent {file: $file})
+             DETACH DELETE p
+            `, {
+        "file": file.name
+      }
+      );
+      await graph.query(
+        `MATCH (p:Child {file: $file})
+             DELETE p
+            `, {
+        "file": file.name
+      }
+      );
+
+      let lcDoc = new Document({ pageContent: pages.join('  \r\n'), metadata: { file: file.name, uploaded: uploaded } });
+
+      await uploadToSmallDocsStore(lcDoc, cn);
+
+      fs.rmSync(path, {
+        force: true,
+      });
+      return NextResponse.json({ success: true });
+    
+    } else {
 
     
-    let embeddings: any = null;
-
-    if(process.env.BEDROCK_AWS_REGION) {
-        embeddings = new BedrockEmbeddings({
-          region: process.env.BEDROCK_AWS_REGION,
-          credentials: {
-            accessKeyId: process.env.BEDROCK_AWS_ACCESS_KEY_ID!,
-            secretAccessKey: process.env.BEDROCK_AWS_SECRET_ACCESS_KEY!,
-          },
-          model: process.env.BEDROCK_EMBED_MODEL, // Default value
+      for(let i = 1; i <= doc.numPages; i++) {
+    
+        let page = await doc.getPage(i);
+        let content = await page.getTextContent();
+        let strings = content.items.map(function(item: any) {
+            return item.str;
         });
-      } else {
-        embeddings = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002'});
+        console.dir(strings);
+        let pageContent = strings.join(' ');
+    
+        await uploadToChroma(pageContent, i, file.name, cn);
       }
     
-     await Chroma.fromTexts(
-    [
-      pageContent
-    ],
-    [{ page: i, file: file.name, uploaded: uploaded }],
-    embeddings,
-    {
-      collectionName: cn,
-      url: process.env.CHROMA_URL
+      fs.rmSync(path, {
+        force: true,
+      });
+    
+      return NextResponse.json({ success: true });
     }
-  );
+  } else {
+    return NextResponse.json({ success: false });
   }
 
-
-
-  return NextResponse.json({ success: true })
 }

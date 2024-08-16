@@ -1,15 +1,15 @@
 import { ChatMessageModel } from "@/features/chat/chat-service";
 import {
   AIMessage,
-  BaseListChatMessageHistory,
   BaseMessage,
-} from "langchain/schema";
+} from "@langchain/core/messages";
 import { nanoid } from "nanoid";
 import {
   addChatMessage,
   getChatMessages,
 } from "./mysql-chat-service";
 import { mapStoredMessagesToChatMessages } from "./utils";
+import { BaseListChatMessageHistory } from "@langchain/core/chat_history";
 
 
 export interface MySQLChatMessageHistoryFields {
@@ -45,7 +45,7 @@ export class MySQLChatMessageHistory extends BaseListChatMessageHistory {
       createdAt: new Date(),
       type: "CHAT_MESSAGE",
       isDeleted: false,
-      content: message.content,
+      content: message.content.toString(),
       role: message instanceof AIMessage ? "assistant" : "user",
       threadId: this.sessionId,
       userId: this.userId,

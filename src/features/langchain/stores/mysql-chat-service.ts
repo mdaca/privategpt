@@ -3,7 +3,7 @@ import {
   FindAllChats,
   UpsertChat,
 } from "@/features/chat/chat-service";
-import { StoredMessage } from "langchain/schema";
+import { StoredMessage } from "@langchain/core/messages";
 
 export const getChatMessages = async (
   sessionId: string
@@ -17,6 +17,7 @@ export const getChatMessages = async (
         content: item.content,
         role: item.role === "user" ? "human" : "ai",
         name: item.userId,
+        tool_call_id: undefined
       },
     });
   });

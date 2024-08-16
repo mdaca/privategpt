@@ -28,9 +28,10 @@ const EditForm = (props) => {
     const { data: session } = useSession();
     const user: any = session?.user;
 
+    const ddlGS: any = useRef();
     const ddl: any = useRef();
     const yesNoData = [{text: 'Yes', value: 1}, {text: 'No', value: 0}];
-    
+    const storeTypeData = [{text: 'Large - Ideal for lots of text on the same topic', value: 'Large'}, {text: 'Small Documents - Can handle documents on distinct topics', value: 'SmallDocs'}, {text: 'Graph - Extract a knowledge graph from text', value: 'Graph'}];
     let priv = 
     <div className="mb-3">
       <Field
@@ -78,6 +79,18 @@ const EditForm = (props) => {
                   label={"Store Description"}
                 />
               </div>
+              
+              <div className="mb-3">
+              <Field
+                name={"storeType"}
+                component={DropDownList}
+                label={"Type of Store"}
+                ref={ddlGS}
+                data={storeTypeData}
+                textField={"text"}
+                dataItemKey={"value"}
+              />
+            </div>
               {priv}
             </fieldset>
             <div className="k-form-buttons">

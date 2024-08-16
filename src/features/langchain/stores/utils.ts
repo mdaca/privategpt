@@ -6,7 +6,7 @@ import {
   HumanMessage,
   StoredMessage,
   SystemMessage,
-} from "langchain/schema";
+} from "@langchain/core/messages";
 
 export function mapStoredMessagesToChatMessages(
   messages: StoredMessage[]

@@ -1,4 +1,4 @@
-import { CreateStore } from '@/features/vectorstore/vectorstore-service';
+import { CreateStore, StoreExists } from '@/features/vectorstore/vectorstore-service';
 import { getToken } from 'next-auth/jwt';
 import { getServerSession } from 'next-auth/next';
 import { NextRequest, NextResponse } from 'next/server'
@@ -19,9 +19,9 @@ export async function POST(request: NextRequest) {
     }
   }
 
-  if(body.name.length > 0) {
+  if(body.name.length > 0 && await StoreExists(body.name) == false)  {
     await CreateStore({
-      collectionName: body.name, collectionDesc: body.desc, isPrivate: priv,
+      collectionName: body.name, collectionDesc: body.desc, isPrivate: priv, storeType: body.storeType,
       id: '',
       createdAt: '',
       userId: '',

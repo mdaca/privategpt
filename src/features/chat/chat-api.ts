@@ -1,6 +1,6 @@
 import { LangChainStream, StreamingTextResponse } from "ai";
 import { ConversationChain, ConversationalRetrievalQAChain } from "langchain/chains";
-import { ChatOpenAI } from "langchain/chat_models/openai";
+import { ChatOpenAI } from "@langchain/openai";
 import { BufferMemory, BufferWindowMemory } from "langchain/memory";
 import { PGPTBufferWindowMemory } from '../langchain/stores/PGPTBufferWindowMemory'
 import {
@@ -9,17 +9,19 @@ import {
   MessagesPlaceholder,
   PromptTemplate,
   SystemMessagePromptTemplate,
-} from "langchain/prompts";
+} from "@langchain/core/prompts";
 import { userHashedId } from "../auth/helpers";
 import { MySQLChatMessageHistory } from "../langchain/stores/mysql";
 import { PromptGPTProps, initAndGuardChatSession } from "./chat-api-helpers";
-import { OpenAIEmbeddings } from "langchain/embeddings/openai";
-import { Chroma } from "langchain/vectorstores/chroma";
-import { CallbackManager } from "langchain/callbacks";
+import { OpenAIEmbeddings } from "@langchain/openai";
+import { Chroma } from "@langchain/community/vectorstores/chroma";
+import { CallbackManager } from "@langchain/core/callbacks/manager";
 import { inertPromptAndResponse } from "./chat-service";
-import { GetMyStores } from "../vectorstore/vectorstore-service";
+import { GetMyStores, get_neo4jgraph } from "../vectorstore/vectorstore-service";
 import { BedrockChat } from "@langchain/community/chat_models/bedrock";
 import { BedrockEmbeddings } from "@langchain/community/embeddings/bedrock";
+import { Neo4jVectorStore } from "@langchain/community/vectorstores/neo4j_vector";
+import { GraphCypherQAChain } from "langchain/chains/graph_qa/cypher";
 
 export const PromptGPT = async (props: PromptGPTProps) => {
   const { lastHumanMessage, id } = await initAndGuardChatSession(props);
@@ -67,9 +69,9 @@ export const PromptGPT = async (props: PromptGPTProps) => {
 
     } else {
       model = new ChatOpenAI({
-        temperature: .5,});
+        temperature: .5, verbose: true});
 
-        embeddings = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: 'text-embedding-ada-002' }  );
+        embeddings = new OpenAIEmbeddings({azureOpenAIApiDeploymentName: process.env.AZURE_OPENAI_EMBED_MODEL }  );
     }
 
     const myStores = await GetMyStores();
@@ -121,12 +123,121 @@ export const PromptGPT = async (props: PromptGPTProps) => {
   const CHAIN_PROMPT = 
   `${custom}${CHAIN_PROMPT_END}`;
 
+  const storeType = myStores.find((item) => { return item.collectionName == collectionName; })?.storeType;
 
-    const vectorStore = await Chroma.fromExistingCollection(
+  let vectorStore: any = null;
+
+  if(storeType == 'Graph') {
+
+    // const url = process.env.NEO4J_URI!;
+    // const username = process.env.NEO4J_USERNAME!;
+    // const password = process.env.NEO4J_PASSWORD!;
+    
+    // vectorStore = await Neo4jVectorStore.fromExistingGraph(embeddings, {
+    //   textNodeProperties: ['id'],
+    //   nodeLabel: '*',
+    //   embeddingNodeProperty: "embedding",
+    //   url: url,
+    //   username: username,
+    //   password: password,
+    //   database: collectionName  }
+    // );
+
+    const memory = new MySQLChatMessageHistory({
+      sessionId: id,
+      userId: userId,
+    });
+
+    const cypherPrompt: string = `Task:Generate Cypher statement to query a graph database.
+                      Instructions:
+                      Use only the provided relationship types and properties in the schema.
+                      Do not use any other relationship types or properties that are not provided.
+                      Schema:
+                      {schema}
+                      Note: Do not include any explanations or apologies in your responses.
+                      Do not respond to any questions that might ask anything else than for you to construct a Cypher statement.
+                      Do not include any text except the generated Cypher statement.
+                      ALWAYS USE SUBSTRING WHEN SEARCHING FOR STRING VALUES IN THE 'id' PROPERTY.
+                      Examples: Here are a few examples of generated Cypher statements for particular questions:
+                      # Who has a bachelor's degree?
+                      MATCH (p:PERSON)-[:HAS]->(d:EDUCATION)
+                      WHERE d.id CONTAINS \"Bachelor\"
+                      RETURN p.id AS PersonWithBachelorsDegree
+
+                      The question is:
+                      {question}`;
+
+    const chain = GraphCypherQAChain.fromLLM({
+      cypherLLM: model,
+      qaLLM: model,
+      graph: await get_neo4jgraph(collectionName),
+      cypherPrompt: new PromptTemplate({ template: cypherPrompt, inputVariables: ["schema", "question"]})
+      //qaPrompt: new PromptTemplate()
+    });
+    const callbacks = CallbackManager.fromHandlers(handlers);
+    
+    let res: any = null;
+
+    try{
+      await memory.addUserMessage(lastHumanMessage.content);
+      res = await chain.run(lastHumanMessage.content);
+    } catch(e: any){
+      res = e.message;
+
+      if(res.indexOf('(offset: 0))\n"') > 0) {
+        res = res.split('(offset: 0))\n"')[1];
+        res = res.substring(0, res.length - 5);
+      }
+    }
+      let ret = '';
+
+      if(res.response) {
+        ret = res.response;
+      } else if(res.text) {
+        ret = res.text;
+      } else {
+        ret = res;
+      }
+
+      ret += 'data: [DONE]';
+      
+      await memory.addAIMessage(ret);
+
+      const Readable = require('stream').Readable;
+      let s = Readable.from(ret);
+      return new StreamingTextResponse(s);
+  }
+  else if(storeType == 'SmallDocs') {
+
+    const retrieval_query = `
+  MATCH (node)-[:HAS_PARENT]->(parent)
+  WITH parent, max(score) AS score // deduplicate parents
+  RETURN parent.text AS text, score, { file: parent.file, uploaded: parent.uploaded } AS metadata
+  `;
+  
+  const url = process.env.NEO4J_URI!;
+  const username = process.env.NEO4J_USERNAME!;
+  const password = process.env.NEO4J_PASSWORD!;
+
+  vectorStore = await Neo4jVectorStore.fromExistingIndex(embeddings, {
+      indexName: "retrieval",
+      nodeLabel: "Child",
+      embeddingNodeProperty: "embedding",
+      retrievalQuery: retrieval_query,
+      url: url,
+      username: username,
+      password: password,
+      database: collectionName  }
+    );
+
+  } else {
+
+    vectorStore = await Chroma.fromExistingCollection(
       embeddings,
       { collectionName: collectionName,
         url: process.env.CHROMA_URL  }
     );
+  }
   
     const chain = ConversationalRetrievalQAChain.fromLLM(
       model,
@@ -175,6 +286,7 @@ export const PromptGPT = async (props: PromptGPTProps) => {
       const Readable = require('stream').Readable;
       let s = Readable.from(ret);
       return new StreamingTextResponse(s);
+
   } else {
 
     let model: any = null;

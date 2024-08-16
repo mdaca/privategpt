@@ -7,5 +7,6 @@ CREATE TABLE `stores` (
   `isPrivate` tinyint NOT NULL DEFAULT '1',
   `collectionName` text NOT NULL,
   `collectionDesc` text NULL,
-  `collectionPrompt` text NULL
+  `collectionPrompt` text NULL,
+  `storeType` text NOT NULL
 );
