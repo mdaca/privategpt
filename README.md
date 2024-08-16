@@ -19,6 +19,8 @@ MDACA PrivateGPT is our enterprise option.
 
 **4. Knowledge Stores:** Ask questions over hundreds of pages or your own content and webpages.
 
+![](/images/graph-store.png)
+
 We've built a Solution Accelerator to empower your workforce with MDACA PrivateGPT.
 
 # 📘 Prerequisites
@@ -31,8 +33,10 @@ We've built a Solution Accelerator to empower your workforce with MDACA PrivateG
 2. Setup an Authentication Provider:
    The [Add an identity provider](#-add-an-identity-provider) section below shows how to configure authentication providers.
 3. Setup ChromaDB as a Vectorstore:
-   ChromaDB should be running in client/server mode and configured via CHROMA_URL to utilize knowledge stores.
-4. Setup MySQL as a Database Server:
+   ChromaDB should be running in client/server mode and configured via CHROMA_URL to utilize large knowledge stores.
+3. Setup [DozerDB](https://dozerdb.org/) as a graph database:
+   DozerDB should be running and configured via NEO4J_URI to utilize graph knowledge stores.
+5. Setup MySQL as a Database Server:
    MySQL should be running and available to store the chat history.
 
    💡Note: You can configure the authentication provider to your identity solution using [NextAuth providers](https://next-auth.js.org/providers/)
@@ -121,6 +125,11 @@ Clone this repository locally or fork to your Github account. Run all of the the
 
    # CHROMA DB configuration
    CHROMA_URL=http://localhost:8000
+
+   # DozerDB configuration
+   NEO4J_URI="bolt://localhost:7687"
+   NEO4J_USERNAME=
+   NEO4J_PASSWORD=
    ```
 
 2. Install npm packages by running `npm install`
@@ -250,3 +259,6 @@ Below are the required environment variables
 | MYSQL_PASSWORD                   |                    | The MySQL application user passsword                                                                                                   |
 | MY_SQL_DB                        |                    | The MySQL database name                                                                                                                |
 | CHROMA_URL                       |                    | URL of the ChromaDB server                                                                                                             |
+| NEO4J_URI                        |                    | Bolt URI for DozerDB                                                                                                                   |
+| NEO4J_USERNAME                   |                    | The DozerDB username                                                                                                                   |
+| NEO4J_PASSWORD                   |                    | The DozerDB password                                                                                                                   |
