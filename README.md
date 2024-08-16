@@ -21,6 +21,8 @@ MDACA PrivateGPT is our enterprise option.
 
 ![](/images/graph-store.png)
 
+![](/images/add-content.png)
+
 We've built a Solution Accelerator to empower your workforce with MDACA PrivateGPT.
 
 # 📘 Prerequisites
